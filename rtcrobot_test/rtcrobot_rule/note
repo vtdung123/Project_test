@@ -1,0 +1,69 @@
+Cấu hình để build cả cmake và python 
+
+
+I/ tạo các folder cần thiết : 
+
+    mặc định khi tạo pakages mới bằng lệnh 'ros2 pkg create name_pkg' sẽ có: 
+        CMakeLists.txt  include  package.xml  src
+    
+    tạo thêm 1 số  folder sau : 
+        - launch : forder chứa các file launch 
+        - scripts: chứa các sourc code python
+        - rtcrobot_rule (chú ý -tên fordel này cùng tên với tên gói): thư mục chứa thư viện của các node python 
+        (trong rtcrobot_rule phải có file __init__.py)
+
+II/ Sửa CMakelist.txt
+
+    1 . thêm package ament_cmake_python vào file CMakelist.txt
+
+        # find dependencies
+        find_package(ament_cmake_python REQUIRED)
+        find_package(ament_cmake REQUIRED)
+        ....
+    2 . Nếu  thư viện trong thư mục include 
+        # Include Cpp "include" directory
+        include_directories(include)
+
+    3. thêm 1 node thực thi C++ tên cpp_node
+        # Create Cpp executable
+        add_executable(cpp_executable src/cpp_node.cpp)
+        ament_target_dependencies(cpp_executable rclcpp)
+        # Install Cpp executables
+        install(TARGETS
+        cpp_executable
+        DESTINATION lib/${PROJECT_NAME}
+        )
+
+    4. thêm 1 node thực thi python tên py_node.py
+        # Install Python modules
+        ament_python_install_package(${PROJECT_NAME})
+
+        # Install Python executables
+        install(PROGRAMS
+        scripts/py_node.py
+        DESTINATION lib/${PROJECT_NAME}
+        )
+
+    5. Cài đặt để ros nhìn thấy các file launch  
+        # Install launch files.
+        install(DIRECTORY
+        launch
+        DESTINATION share/${PROJECT_NAME}/
+        )
+    
+    6. Cuối file phải có :
+        ament_package()
+    
+
+III/ sửa package.xml
+    trong file packges.xml cần 2 gói buildtool_depend là  ament_cmake, ament_cmake_python
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+    <depend>rclcpp</depend>
+    <depend>rclpy</depend>
+    <exec_depend>ros2launch</exec_depend>
+
+
+    
